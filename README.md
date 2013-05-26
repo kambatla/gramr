@@ -6,7 +6,7 @@ for large-scale graphs.
 
 The code is split into:
 - io: to read/write graphs in different formats
-- kernels: basic graph (adjacency matrix) operations
+- kernels: common graph (adjacency matrix) operations
 - algos: graph algorithms built using kernels
 
 
