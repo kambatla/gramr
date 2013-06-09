@@ -7,11 +7,6 @@
   <packaging>jar</packaging>
   <name>gramr</name>
   <url>http://maven.apache.org</url>
-
-  <properties>
-    <hadoop.version>2.0.0-mr1-cdh4.2.1</hadoop.version>
-  </properties>
-
   <build>
     <pluginManagement>
       <plugins>
@@ -24,35 +19,25 @@
             <target>1.6</target>
           </configuration>
         </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <executions>
+                <execution>
+                    <phase>package</phase>
+                    <goals>
+                        <goal>attached</goal>
+                    </goals>
+                </execution>
+            </executions>
+            <configuration>
+                <descriptorRefs>
+                    <descriptorRef>jar-with-dependencies</descriptorRef>
+                </descriptorRefs>
+            </configuration>
+        </plugin>
       </plugins>
     </pluginManagement>
-
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>1.7.1</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-eclipse-plugin</artifactId>
-        <version>2.9</version>
-        <configuration>
-          <buildOutputDirectory>eclipse-classes</buildOutputDirectory>
-          <downloadSources>true</downloadSources>
-          <downloadJavadocs>false</downloadJavadocs>
-        </configuration>
-      </plugin>
-    </plugins>
   </build>
 
   <dependencies>
@@ -63,17 +48,16 @@
       <scope>test</scope>
     </dependency>
 
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-client</artifactId>
-      <version>${hadoop.version}</version>
-      <scope>provided</scope>
+    <dependency> 
+      <groupId>org.apache.hadoop</groupId> 
+      <artifactId>hadoop-core</artifactId> 
+      <version>1.2.0</version> 
     </dependency>
 
     <dependency>
       <groupId>it.unimi.dsi</groupId>
       <artifactId>webgraph</artifactId>
-      <version>3.0.7</version>
+      <version>3.0.9</version>
       <scope>provided</scope>
     </dependency>
 
@@ -104,18 +88,4 @@
         <scope>provided</scope>
     </dependency>
   </dependencies>
-
-
-    <repositories>
-    <repository>
-      <id>cloudera</id>
-      <url>https://repository.cloudera.com/artifactory/cloudera-repos</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
 </project>
