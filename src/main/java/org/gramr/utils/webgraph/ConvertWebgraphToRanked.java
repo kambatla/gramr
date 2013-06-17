@@ -1,4 +1,4 @@
-package org.gramr.kernel;
+package org.gramr.utils.webgraph;
 
 import org.gramr.io.RandomInputFormat;
 
@@ -24,8 +24,6 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
-
-import org.gramr.utils.BVGraphUtil;
 
 //import org.gramr.common.AdjList;
 import org.gramr.common.RankedAdjList;
@@ -89,7 +87,7 @@ public class ConvertWebgraphToRanked extends Configured implements Tool {
 
 	private static void printUsage() {
 		System.out
-				.println("hadoop jar <jar> org.gramr.kernel.ConvertWebgraphToRanked <inputDir> <basename> <output>");
+				.println("hadoop jar <jar> org.gramr.utils.webgraph.ConvertWebgraphToRanked <inputDir> <basename> <output>");
 	}
 
 	public int run(String[] args) throws Exception {

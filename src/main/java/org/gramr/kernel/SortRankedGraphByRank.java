@@ -1,8 +1,6 @@
 package org.gramr.kernel;
 
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.File;
 import java.io.IOException;
 
@@ -15,7 +13,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -27,49 +24,12 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
+import org.gramr.common.Rank;
 import org.gramr.common.RankedAdjList;
 
 public class SortRankedGraphByRank extends Configured implements Tool {
 	public static final Log LOG = LogFactory
 			.getLog(SortRankedGraphByRank.class);
-
-	@SuppressWarnings("unchecked")
-	private static class Rank implements WritableComparable {
-		private float rank;
-
-		Rank() {
-
-		}
-
-		Rank(float rank) {
-			this.rank = rank;
-		}
-
-		public float getRank() {
-			return this.rank;
-		}
-
-		@Override
-		public void readFields(DataInput in) throws IOException {
-			this.rank = in.readFloat();
-		}
-
-		@Override
-		public void write(DataOutput out) throws IOException {
-			out.writeFloat(this.rank);
-		}
-
-		@Override
-		public int compareTo(Object other) {
-			Rank otherRank = (Rank) other;
-			if (this.rank > otherRank.getRank())
-				return -1;
-			else if (this.rank < otherRank.getRank())
-				return 1;
-			else
-				return 0;
-		}
-	}
 
 	public static class SortVecMapper extends
 			Mapper<LongWritable, Text, Rank, IntWritable> {
