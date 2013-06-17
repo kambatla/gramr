@@ -32,14 +32,22 @@ public class CreateRankAndUrl extends Configured implements Tool {
         throws IOException, InterruptedException {
       int lineNum = (int) key.get();
       String line = value.toString();
-      RankAndUrl rankAndUrl = RankAndUrl.parse(value.toString());
-      if (rankAndUrl == null) {
-        if (!line.contains("http")) {
-          throw new IOException("Funny input: " + line + " " + line.split(" ")
-              .length);
-        }
+      RankAndUrl rankAndUrl = null;
+      if (line.contains("http")) {
         rankAndUrl = new RankAndUrl(lineNum, 1.0f, line);
+      } else {
+        String[] splits = line.split("\t");
+        rankAndUrl = new RankAndUrl(Integer.parseInt(splits[0]),
+            Float.parseFloat(splits[1]), "");
       }
+//      RankAndUrl rankAndUrl = RankAndUrl.parse(value.toString());
+//      if (rankAndUrl == null) {
+//        if (!line.contains("http")) {
+//          throw new IOException("Funny input: " + line + " " + line.split(" ")
+//              .length);
+//        }
+//        rankAndUrl = new RankAndUrl(lineNum, 1.0f, line);
+//      }
       context.write(new IntWritable(rankAndUrl.getSrc()), rankAndUrl);
     }
   }
@@ -52,7 +60,7 @@ public class CreateRankAndUrl extends Configured implements Tool {
       for (RankAndUrl list : lists) {
         if (out == null)
           out = list;
-        else if (list.getUrl() == null) {
+        else if (list.getUrl().equals("")) {
           out.setRank(list.getRank());
         } else {
           out.setUrl(list.getUrl());
