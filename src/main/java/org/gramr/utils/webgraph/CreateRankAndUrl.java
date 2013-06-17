@@ -35,7 +35,8 @@ public class CreateRankAndUrl extends Configured implements Tool {
       RankAndUrl rankAndUrl = RankAndUrl.parse(value.toString());
       if (rankAndUrl == null) {
         if (!line.contains("http")) {
-          throw new IOException("Funny input: " + line);
+          throw new IOException("Funny input: " + line + " " + line.split(" ")
+              .length);
         }
         rankAndUrl = new RankAndUrl(lineNum, 1.0f, line);
       }
