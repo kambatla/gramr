@@ -78,7 +78,7 @@ public class RankAndUrl implements WritableComparable {
     if (str == null) return null;
 
     String[] splits = str.split(" ");
-    if (splits.length >= 2) return null;
+    if (splits.length < 2) return null;
 
     int src = Integer.parseInt(splits[0]);
     float rank = Float.parseFloat(splits[1]);
