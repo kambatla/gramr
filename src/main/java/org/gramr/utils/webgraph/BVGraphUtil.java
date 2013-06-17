@@ -1,4 +1,4 @@
-package org.gramr.utils;
+package org.gramr.utils.webgraph;
 
 import java.io.IOException;
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package org.gramr.io;
+package org.gramr.utils.webgraph;
 
 import java.io.IOException;
 import org.apache.commons.logging.Log;
@@ -10,8 +10,6 @@ import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
-
-import org.gramr.utils.BVGraphUtil;
 
 import org.gramr.common.AdjList;
 
