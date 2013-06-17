@@ -32,15 +32,14 @@ public class CreateRankAndUrl extends Configured implements Tool {
         throws IOException, InterruptedException {
       int lineNum = (int) key.get();
       String line = value.toString();
-      RankAndUrl rankAndUrl;
-      if (line.contains("http")) {
-        // it is a url
+      RankAndUrl rankAndUrl = RankAndUrl.parse(value.toString());
+      if (rankAndUrl == null) {
+        if (!line.contains("http")) {
+          throw new IOException("Funny input: " + line);
+        }
         rankAndUrl = new RankAndUrl(lineNum, 1.0f, line);
-      } else {
-        rankAndUrl = RankAndUrl.parse(value.toString());
-        lineNum = rankAndUrl.getSrc();
       }
-      context.write(new IntWritable(lineNum), rankAndUrl);
+      context.write(new IntWritable(rankAndUrl.getSrc()), rankAndUrl);
     }
   }
 
