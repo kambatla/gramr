@@ -8,6 +8,8 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.JobClient;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -21,33 +23,43 @@ import org.apache.hadoop.util.ToolRunner;
 import java.io.File;
 import java.io.IOException;
 
-public class SortAndFilterRankAndUrl extends Configured implements Tool {
+public class IntersectRankAndUrlFiles extends Configured implements Tool{
 
-  public static class FilterOutDynamicUrls extends
-      Mapper<LongWritable, Text, RankAndUrl, NullWritable> {
+  public static enum UrlIntersection {
+    Common, Diff
+  }
+
+  public static class EmitUrl extends
+      Mapper<LongWritable, Text, Text, IntWritable> {
 
     public void map(LongWritable key, Text value, Context context)
         throws IOException, InterruptedException {
       RankAndUrl rankAndUrl = RankAndUrl.parse(value.toString());
-      String url = rankAndUrl.getUrl();
-      if (url != null && !url.contains("?")) {
-        context.write(rankAndUrl, NullWritable.get());
-      }
+      context.write(new Text(rankAndUrl.getUrl()), new IntWritable(1));
     }
   }
 
-  public static class SortRankAndUrl extends
-      Reducer<RankAndUrl, NullWritable, NullWritable, Text> {
-    public void reduce(RankAndUrl src, Iterable<RankAndUrl> values,
+  public static class UrlMatch extends
+      Reducer<Text, IntWritable, NullWritable, Text> {
+    public void reduce(Text src, Iterable<IntWritable> nums,
                        Context context) throws IOException, InterruptedException {
-      context.write(NullWritable.get(), new Text(src.toString()));
+      int count = 0;
+      for (IntWritable num : nums) {
+        count += num.get();
+      }
+      if (count == 1) {
+        context.getCounter(UrlIntersection.Diff).increment(1);
+        context.write(NullWritable.get(), src);
+      } else {
+        context.getCounter(UrlIntersection.Common).increment(1);
+      }
     }
   }
 
   private static int printUsage() {
     System.out
-        .println("Usage: org.gramr.kernel.SortAndFilterRankAndUrl " +
-            "<RankAndUrls>" + "<Sorted RankAndUrls output dir>");
+        .println("Usage: org.gramr.kernel.IntersectRankAndUrlFiles <Urls " +
+            "files> <diff urls>");
     return 0;
   }
 
@@ -60,27 +72,28 @@ public class SortAndFilterRankAndUrl extends Configured implements Tool {
 
     Configuration conf = new Configuration(getConf());
 
-    String input = args[0];
+    String urlsFile = args[0];
     String output = args[1];
 
     Job job = null;
     try {
-      job = new Job(conf, SortAndFilterRankAndUrl.class.getName());
-      job.setJarByClass(SortAndFilterRankAndUrl.class);
+      job = new Job(conf, "Intersect RankAndUrl files");
+      job.setJarByClass(IntersectRankAndUrlFiles.class);
 
       job.setInputFormatClass(TextInputFormat.class);
-      job.setMapperClass(FilterOutDynamicUrls.class);
-      job.setMapOutputKeyClass(RankAndUrl.class);
-      job.setMapOutputValueClass(NullWritable.class);
-      job.setReducerClass(SortRankAndUrl.class);
+      job.setMapperClass(EmitUrl.class);
+      job.setMapOutputKeyClass(Text.class);
+      job.setMapOutputValueClass(IntWritable.class);
+      job.setReducerClass(UrlMatch.class);
       job.setOutputKeyClass(NullWritable.class);
       job.setOutputValueClass(Text.class);
       job.setOutputFormatClass(TextOutputFormat.class);
 
-      FileInputFormat.addInputPath(job, new Path(input));
+      FileInputFormat.addInputPath(job, new Path(urlsFile));
       FileOutputFormat.setOutputPath(job, new Path(output));
 
-      job.setNumReduceTasks(1);
+      job.setNumReduceTasks(new JobClient(new JobConf(conf)).getClusterStatus
+          ().getMaxReduceTasks());
       job.waitForCompletion(true);
     } finally {
       if (job != null) {
@@ -94,7 +107,7 @@ public class SortAndFilterRankAndUrl extends Configured implements Tool {
 
   public static void main(String[] args) {
     try {
-      ToolRunner.run(new Configuration(), new SortAndFilterRankAndUrl(), args);
+      ToolRunner.run(new Configuration(), new IntersectRankAndUrlFiles(), args);
     } catch (Exception e) {
       e.printStackTrace();
       System.exit(0);

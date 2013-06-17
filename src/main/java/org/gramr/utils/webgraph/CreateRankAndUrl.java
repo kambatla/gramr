@@ -23,9 +23,9 @@ import org.apache.hadoop.util.ToolRunner;
 import java.io.File;
 import java.io.IOException;
 
-public class CreateRankedAdjListUrl extends Configured implements Tool {
+public class CreateRankAndUrl extends Configured implements Tool {
 
-  public static class ReadAdjListAndUrl extends
+  public static class ReadRankAndUrl extends
       Mapper<LongWritable, Text, IntWritable, RankAndUrl> {
 
     public void map(LongWritable key, Text value, Context context)
@@ -44,7 +44,7 @@ public class CreateRankedAdjListUrl extends Configured implements Tool {
     }
   }
 
-  public static class JoinAdjListAndUrl extends
+  public static class JoinRankAndUrl extends
       Reducer<IntWritable, RankAndUrl, NullWritable, Text> {
     public void reduce(IntWritable src, Iterable<RankAndUrl> lists,
                        Context context) throws IOException, InterruptedException {
@@ -64,37 +64,40 @@ public class CreateRankedAdjListUrl extends Configured implements Tool {
 
   private static int printUsage() {
     System.out
-        .println("Usage: org.gramr.kernel.SortRankedGraphByRank <Graph> <SortedVector>");
+        .println("Usage: org.gramr.kernel.CreateRankAndUrl <Urls file> " +
+            "<Sorted rank vector> <RankAndUrl output dir>");
     return 0;
   }
 
   @Override
   public int run(String[] args) throws Exception {
-    if (args.length != 2) {
+    if (args.length != 3) {
       printUsage();
       System.exit(0);
     }
 
     Configuration conf = new Configuration(getConf());
 
-    String input = args[0];
-    String output = args[1];
+    String urlsFile = args[0];
+    String ranksFile= args[1];
+    String output = args[2];
 
     Job job = null;
     try {
       job = new Job(conf, "Create RankedAdjListUrls");
-      job.setJarByClass(CreateRankedAdjListUrl.class);
+      job.setJarByClass(CreateRankAndUrl.class);
 
       job.setInputFormatClass(TextInputFormat.class);
-      job.setMapperClass(ReadAdjListAndUrl.class);
+      job.setMapperClass(ReadRankAndUrl.class);
       job.setMapOutputKeyClass(IntWritable.class);
       job.setMapOutputValueClass(RankAndUrl.class);
-      job.setReducerClass(JoinAdjListAndUrl.class);
+      job.setReducerClass(JoinRankAndUrl.class);
       job.setOutputKeyClass(NullWritable.class);
       job.setOutputValueClass(Text.class);
       job.setOutputFormatClass(TextOutputFormat.class);
 
-      FileInputFormat.addInputPath(job, new Path(input));
+      FileInputFormat.addInputPath(job, new Path(urlsFile));
+      FileInputFormat.addInputPath(job, new Path(ranksFile));
       FileOutputFormat.setOutputPath(job, new Path(output));
 
       job.setNumReduceTasks(new JobClient(new JobConf(conf)).getClusterStatus
@@ -112,7 +115,7 @@ public class CreateRankedAdjListUrl extends Configured implements Tool {
 
   public static void main(String[] args) {
     try {
-      ToolRunner.run(new Configuration(), new CreateRankedAdjListUrl(),
+      ToolRunner.run(new Configuration(), new CreateRankAndUrl(),
           args);
     } catch (Exception e) {
       e.printStackTrace();
